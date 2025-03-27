@@ -1,0 +1,7 @@
+name: Psychics
+version: '0'
+main: io.github.seamo.psychics.Ability
+api-version: '1.21'
+commands:
+  psy:
+    permission: op
