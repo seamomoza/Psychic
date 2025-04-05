@@ -17,14 +17,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.*;
 
 public class Ability extends JavaPlugin implements TabExecutor, Listener, CommandExecutor {
 
-    private Map<String, String> playerTeams = new HashMap<>();
+    public Map<String, String> playerTeams = new HashMap<>();
     private Map<String, Team> teams = new HashMap<>();
     private static Ability instance;
     private final Map<String, Boolean> resurrectedPlayers = new HashMap<>();
@@ -36,6 +35,7 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
         getCommand("psy").setTabCompleter(this);
         instance = this; // 플러그인 인스턴스를 저장
         Bukkit.getServer().getPluginManager().registerEvents(this, this); // 이벤트 리스너 등록
+        Bukkit.getServer().getPluginManager().registerEvents(new OreDrop(),this);
     }
 
     public static Ability getInstance() {
@@ -148,6 +148,10 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
                 giveItem(player, Material.BLAZE_ROD, Enchantment.BINDING_CURSE, 1, "§3§l블리츠 크랭크의 막대");
                 giveItem(player, Material.BLAZE_ROD, Enchantment.BINDING_CURSE, 1, "§3§l블리츠 크랭크의 막대");
                 break;
+            case "gomu":
+                player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE).setBaseValue(8);
+                player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(6);
+                break;
             default:
                 sender.sendMessage("§c§l" + "알 수 없는 능력입니다.");
                 return true;
@@ -212,6 +216,12 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
                 Bukkit.dispatchCommand(console, "effect clear " + player.getName());
                 player.getInventory().clear();
                 player.setHealthScale(20);
+                break;
+            case "gomu":
+                Bukkit.dispatchCommand(console, "effect clear " + player.getName());
+                player.getInventory().clear();
+                player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE).setBaseValue(4);
+                player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(3);
                 break;
             default:
                 sender.sendMessage("§c§l" + "알 수 없는 능력입니다.");
@@ -314,6 +324,8 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
 
         // 🔹 신호기 소리 재생 (주변 플레이어도 들을 수 있도록)
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.5f);
+        player.sendMessage("§2§l끌어오는 대상: " + target.getName());
+        target.getWorld().spawnParticle(Particle.PORTAL, target.getLocation(), 50, 0.5, 0.5, 0.5, 0.1);
 
         // 🔹 3초 동안 보라색 파티클 효과 적용
         new BukkitRunnable() {
@@ -327,7 +339,7 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
                     return;
                 }
                 count++;
-                target.getWorld().spawnParticle(Particle.PORTAL, target.getLocation(), 50, 0.5, 0.5, 0.5, 0.1);
+                target.spawnParticle(Particle.ELDER_GUARDIAN, target.getLocation(), 1, 0.5, 0.5, 0.5, 0.1);
             }
         }.runTaskTimer(Ability.getInstance(), 0L, 1L); // 1틱마다 반복 실행
 
@@ -500,7 +512,7 @@ public class Ability extends JavaPlugin implements TabExecutor, Listener, Comman
             return Arrays.asList("attach", "remove");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("attach")) {
-                return Arrays.asList("paladin", "guardian", "weaponmaster", "assassin", "pyromancer", "ninja", "resurrected", "ripper", "grap");
+                return Arrays.asList("paladin", "guardian", "weaponmaster", "assassin", "pyromancer", "ninja", "resurrected", "ripper", "grap", "gomu");
 
             }
             return null;
